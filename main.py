@@ -64,9 +64,9 @@ def main() -> None:
             console.print(f"发生异常：{exc}")
             try:
                 self_upgrade.record_failure(task=user_input, error=str(exc), agent_output="")
-            except Exception:
-                # 失败记录失败时仅静默处理，防止二次异常中断会话。
-                pass
+            except Exception as record_exc:
+                # 记录失败再次失败时输出日志，避免问题被完全吞掉。
+                logging.exception("写入失败案例日志失败: %s", record_exc)
 
 
 if __name__ == "__main__":

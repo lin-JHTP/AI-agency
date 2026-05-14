@@ -45,6 +45,6 @@ class WeatherTool(BaseTool):
             weather = data.get("weather", [{}])[0].get("description", "未知")
             temp = data.get("main", {}).get("temp", "未知")
             humidity = data.get("main", {}).get("humidity", "未知")
-            return f"{city} 当前天气：{weather}，温度 {temp}°C，湿度 {humidity}% 。"
+            return f"{city} 当前天气：{weather}，温度 {temp}°C，湿度 {humidity}%。"
         except Exception as exc:  # noqa: BLE001 - 需要兜底异常避免主流程崩溃
             return f"天气调用失败：{exc}"

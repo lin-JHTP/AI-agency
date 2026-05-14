@@ -50,7 +50,8 @@ class SubAgentPool:
         if not chunks:
             return []
 
-        results: list[str] = [""] * len(chunks)
+        # 使用 None 作为初始值，避免空字符串掩盖异常任务。
+        results: list[str | None] = [None] * len(chunks)
         max_workers = min(self.size, len(chunks))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # 记录 future 到索引的映射，确保返回结果顺序稳定。
@@ -64,7 +65,8 @@ class SubAgentPool:
                     results[index] = future.result()
                 except Exception as exc:  # noqa: BLE001 - 兜底异常
                     results[index] = f"子任务执行异常：{exc}"
-        return results
+        # 将未填充项替换为显式错误提示，确保调用方可感知异常。
+        return [item if item is not None else "子任务未返回结果。" for item in results]
 
     def reduce(self, results: list[str], original_task: str) -> str:
         """将多个子结果汇总为最终输出。"""

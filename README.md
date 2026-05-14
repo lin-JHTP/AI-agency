@@ -121,3 +121,4 @@ class MyTool(BaseTool):
 - `.gitignore` 已默认忽略 `.env`
 - 仅提交 `.env.example` 作为配置模板
 - 若误泄露密钥，请立刻在平台后台吊销并重建
+- `code_exec` 工具仅适合受信任输入场景，不应对公网开放执行权限

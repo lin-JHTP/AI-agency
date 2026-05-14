@@ -76,22 +76,21 @@ class DocAgent:
 
     def auto_summarize_and_save(self, task: str, result: str) -> Path:
         """自动生成任务摘要并落盘到 knowledge_base 目录。"""
-        today = datetime.now().strftime("%Y-%m-%d")
+        now = datetime.now()
+        today = now.strftime("%Y-%m-%d")
         file_path = self.knowledge_base_path / f"{today}_task_summary.md"
 
-        # 采用追加写入，保留同一天多次任务记录。
+        # 采用文件追加写入，避免每次读全量文件造成性能损耗。
         section = (
-            f"## {datetime.now().strftime('%H:%M:%S')}\n\n"
+            f"## {now.strftime('%H:%M:%S')}\n\n"
             f"### 任务\n{task}\n\n"
             f"### 结果摘要\n{result}\n\n"
             "---\n\n"
         )
-        file_path.write_text(
-            file_path.read_text(encoding="utf-8") + section
-            if file_path.exists()
-            else f"# 每日任务摘要（{today}）\n\n{section}",
-            encoding="utf-8",
-        )
+        if not file_path.exists():
+            file_path.write_text(f"# 每日任务摘要（{today}）\n\n", encoding="utf-8")
+        with file_path.open("a", encoding="utf-8") as file:
+            file.write(section)
         return file_path
 
     def get_relevant_context(self, query: str) -> str:

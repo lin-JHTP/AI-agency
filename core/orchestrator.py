@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from enum import Enum
 from typing import TypedDict
 
@@ -127,8 +128,8 @@ class OrchestratorAgent:
         text = user_input.lower()
 
         if any(keyword in text for keyword in ["天气", "weather"]):
-            # 提取城市名的简化规则：取最后一个词作为城市。
-            city = user_input.strip().split()[-1] if user_input.strip().split() else "Beijing"
+            # 使用轻量规则提取城市名，兼容多词城市。
+            city = self._extract_city(user_input)
             tool_result = self.api_agent.call_tool("weather", city=city)
         elif any(keyword in text for keyword in ["搜索", "search", "查一下"]):
             tool_result = self.api_agent.call_tool("search", query=user_input)
@@ -171,6 +172,25 @@ class OrchestratorAgent:
     def _node_respond(self, state: OrchestratorState) -> OrchestratorState:
         """最终响应节点。"""
         return {**state, "final_response": state.get("reduced_result", "未生成回复。")}
+
+    def _extract_city(self, user_input: str) -> str:
+        """从自然语言中提取城市名，兼容简单中英文输入。"""
+        # 优先处理英文天气问句，如: weather in New York
+        en_match = re.search(r"(?:weather(?: in)?|天气)\s+([A-Za-z][A-Za-z\s-]+)", user_input, re.IGNORECASE)
+        if en_match:
+            return en_match.group(1).strip()
+
+        # 中文规则：提取“天气”关键词后的文本并去除常见语气词。
+        zh_match = re.search(r"天气[:：]?\s*(.+)", user_input)
+        if zh_match:
+            city_text = zh_match.group(1).strip()
+            city_text = re.sub(r"(怎么样|如何|情况|呢|吗|？|\?)$", "", city_text).strip()
+            if city_text:
+                return city_text
+
+        # 兜底：取最后一个词，避免完全无法识别时失败。
+        parts = user_input.strip().split()
+        return parts[-1] if parts else "Beijing"
 
     def run(self, user_input: str) -> str:
         """主入口：执行图工作流并返回最终结果。"""

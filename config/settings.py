@@ -9,7 +9,7 @@ load_dotenv()
 ORCHESTRATOR_MODEL = "deepseek/deepseek-chat"
 # 子 Agent 默认模型。
 SUB_AGENT_MODEL = "deepseek/deepseek-chat"
-# 向量化模型。
+# 向量化模型（HuggingFace 模型标识符，可按需替换）。
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 # ChromaDB 本地存储路径。
 CHROMA_DB_PATH = "./vector_store"
